@@ -1,0 +1,78 @@
+package com.schoolmanagement.controllers;
+
+import com.schoolmanagement.domain.ContactMessage;
+import com.schoolmanagement.dto.ContactMessageDTO;
+import com.schoolmanagement.dto.ReqContactMessgDto;
+import com.schoolmanagement.dto.RespContactMessageDto;
+import com.schoolmanagement.services.ContactMessageService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/contactMessages")//http://localhost:8080/contactMessages
+public class ContactMessageController {
+
+    @Autowired
+    private ContactMessageService contactMessageService;
+
+
+    //1-yeni bir ContactMessage CREATE etme
+    //http://localhost:8080//contactMessages/save + POST + RequestBody(JSON)
+    // Save Contact Message
+    @PostMapping("/save")
+    public ResponseEntity<Map<String,String>> createContactMessage(@Valid @RequestBody ReqContactMessgDto reqContactMessgDto) {
+        ContactMessage createdContactMessage = contactMessageService.createContactMessage(reqContactMessgDto);
+       Map<String,String> map = new HashMap<>();
+        map.put("status: ","succesfull");
+       map.put("kayit: ","Mesaj kayit islemi basarili!");
+       
+       
+        return ResponseEntity.ok(map);
+    }
+
+
+    //2-tüm contactMessages lari  listeleyelim:READ
+    //http://localhost:8080/contactMessages/getAll + GET
+    @GetMapping("/getAll")
+    public ResponseEntity<List<RespContactMessageDto>> getAllContactMessages() {
+        List<RespContactMessageDto> respContactMessageDtos = contactMessageService.getAllContactMessages();
+
+        
+        return ResponseEntity.ok(respContactMessageDtos);
+    }
+
+
+    //3- Search Contact Message By Email Address With Pageable
+    // /contactMessages/searchByEmail
+
+    @GetMapping("/searchByEmail/{email}")
+    public ResponseEntity<Page<RespContactMessageDto>> searchContactMessagesByEmail(@PathVariable String email, Pageable pageable) {
+        Page<ContactMessage> contactMessages = contactMessageService.searchContactMessagesByEmail(email, pageable);
+        Page<ContactMessageDTO> contactMessageDTOs = contactMessages.map(ContactMessageDTO::new);
+        return ResponseEntity.ok(contactMessageDTOs);
+    }
+
+
+    //4- /contactMessages/searchBySubject
+    // Search Contact Message By Subject With Pageable
+
+
+    @GetMapping("/searchBySubject/{subject}")
+    public ResponseEntity<Page<ContactMessageDTO>> searchContactMessagesBySubject(@PathVariable String subject, Pageable pageable) {
+        Page<ContactMessage> contactMessages = contactMessageService.searchContactMessagesBySubject(subject, pageable);
+        Page<ContactMessageDTO> contactMessageDTOs = contactMessages.map(ContactMessageDTO::new);
+        return ResponseEntity.ok(contactMessageDTOs);
+    }
+
+
+}// class
